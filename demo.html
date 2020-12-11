@@ -5,27 +5,24 @@
     <meta charset="UTF-8">
     <title>canvas.js</title>
     <style>
-        #mouseTip {
-            display: none;
-            position: absolute;
-            pointer-events: none;
-            background-color: gray;
+        #scaleDragCanvas {
+            border: thin solid #aaaaaa;
+            margin: 0 auto;
+            display: block;
         }
     </style>
 </head>
 
 <body>
 
-    <canvas id="scaleDragCanvas" width="800" height="600"
-        style="border: thin solid #aaaaaa; margin:0 auto;display: block;"></canvas>
-    <span id='mouseTip'>
-    </span>
+    <canvas id="scaleDragCanvas" width="800" height="600"></canvas>
     <script>
         var canvas, context;
         var img, imgX = 0,
             imgY = 0,
             imgScale = 1,
-            scaleRate = 1;
+            scaleRate = 1,
+            portraitWidth = 20;
         var MINIMUM_SCALE = 1,
             pos = {},
             posl = {},
@@ -58,26 +55,26 @@
         var data = [{
                 x: 200,
                 y: 200,
-                width: 10,
-                id: 1
+                id: 1,
+                img: './img/portrait1.png'
             },
             {
                 x: 300,
                 y: 300,
-                width: 10,
-                id: 2
+                id: 2,
+                img: './img/portrait2.png'
             },
             {
                 x: 520,
                 y: 350,
-                width: 10,
-                id: 3
+                id: 3,
+                img: './img/portrait3.png'
             },
             {
                 x: 370,
-                y: 58,
-                width: 10,
-                id: 4
+                y: 100,
+                id: 4,
+                img: './img/portrait4.png'
             },
         ]
 
@@ -99,9 +96,9 @@
                 imgY = 0
             }
             data.forEach((item, index) => {
-                item.x = imgX + constData[index].x*imgScale
-                item.y = imgY + constData[index].y*imgScale
-                item.width = constData[index].width * imgScale
+                item.x = imgX + constData[index].x * imgScale
+                item.y = imgY + constData[index].y * imgScale
+                // item.width = constData[index].width * imgScale
             })
             context.drawImage(
                 img, //规定要使用的图像、画布或视频。
@@ -128,10 +125,22 @@
                 // } else {
                 //     data[index].y--
                 // }
-                context.fillStyle = 'red';
-                context.arc(data[index].x, data[index].y, data[index].width, 0, 2 * Math
-                    .PI, true);
-                context.fill();
+                let dataImg = new Image()
+                dataImg.src = item.img
+                dataImg.onload = function () {
+                    context.drawImage(
+                        dataImg, //规定要使用的图像、画布或视频。
+                        data[index].x,
+                        data[index].y,
+                        portraitWidth * imgScale,
+                        portraitWidth * imgScale
+                    );
+                }
+                // context.fillStyle = 'red';
+                // context.arc(data[index].x, data[index].y, 12.5*imgScale, 0, 2 * Math
+                //     .PI, true);
+                // context.fill();
+
                 // if (context.isPointInPath(data[index].x, data[index].y)) {
                 //     console.log(item);
                 // }
@@ -152,9 +161,9 @@
                 var cp = windowToCanvas(e.clientX, e.clientY)
                 // console.log(cp);
                 data.forEach(item => {
-                    if (item.x < cp.x + item.width && item.x > cp.x - item.width && item.y < cp.y + item
-                        .width && item.y > cp.y -
-                        item.width) {
+                    if (item.x < cp.x + portraitWidth && item.x > cp.x - portraitWidth && item.y < cp.y +
+                        portraitWidth && item.y > cp.y -
+                        portraitWidth) {
                         console.log(item.id)
                     }
                 })
@@ -162,17 +171,17 @@
             canvas.onmousedown = function (event) {
                 dragging = true;
                 pos = windowToCanvas(event.clientX, event.clientY); //坐标转换，将窗口坐标转换成canvas的坐标
-                console.log(pos);
+                // console.log(pos);
             };
             canvas.onmousemove = function (evt) { //移动
                 if (dragging) {
+                    canvas.style.cursor = 'hand';
                     posl = windowToCanvas(evt.clientX, evt.clientY);
                     var x = posl.x - pos.x,
                         y = posl.y - pos.y;
                     imgX += x;
                     imgY += y;
                     pos = JSON.parse(JSON.stringify(posl));
-                    document.body.style.cursor = 'Handle';
                     drawImage(); //重新绘制图片
                 }
                 // else {
@@ -185,7 +194,7 @@
             };
             canvas.onmouseup = function (evt) {
                 dragging = false;
-                document.body.style.cursor = 'default';
+                canvas.style.cursor = 'default';
             };
             canvas.onmousewheel = canvas.onwheel = function (event) { //滚轮放大缩小
                 var pos = windowToCanvas(event.clientX, event.clientY);
@@ -207,7 +216,7 @@
                     imgX = (1 - imgScale) * newPos.x + (pos.x - newPos.x);
                     imgY = (1 - imgScale) * newPos.y + (pos.y - newPos.y);
                 }
-                    // console.log(imgX,imgY);
+                // console.log(imgX,imgY);
                 //console.log("wheel.imgY = " + imgY);
                 drawImage(); //重新绘制图片
 
